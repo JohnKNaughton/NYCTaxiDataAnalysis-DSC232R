@@ -15,4 +15,15 @@ GPUs: 0
 ## Screenshot of Spark UI showing multiple executors active during data loading
 See Jupyter Notebook.
 
+# Fitting Analysis
+- Where does your model fit in the fitting graph (underfitting vs. overfitting)?
+- Build at least one model with different hyperparameters and compare results
+- Which model performs best and why?
+- What are the next models you are thinking of for Milestone 4 and why?
+
+# Conclusion from First Model
+- What is the conclusion of your 1st model?
+- What can be done to possibly improve it?
+- How did distributed computing help with this task?
+
 
