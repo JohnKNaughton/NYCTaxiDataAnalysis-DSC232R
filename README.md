@@ -3,7 +3,7 @@ Repo for UCSD DSC232R Group Project using NYC Taxi dataset
 w/ Angela Nadine Junda and John
 
 - Link to dataset: [The NYC Yellow Taxi dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
-- Link to Jupyter notebook: [notebook](Taxi-Milestone2.ipynb)
+- Link to Jupyter notebook: [notebook](Taxi-Milestone3.ipynb)
 
 # SDSC Expanse Setup
 ```
