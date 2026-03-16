@@ -56,3 +56,12 @@ See Jupyter Notebook.
   * Improves interpretability of variance structure
   * Has minimal negative impact on performance
   * Since Random Forest models are robust to high-dimensional data, PCA does not dramatically improve performance. However, it confirms that the   dataset contains substantial correlated structure.
+
+## Second Model Conclusion
+Our project implemented a second model incorporating Principal Component Analysis (PCA) for dimensionality reduction prior to supervised learning.
+
+PCA successfully captured most of the dataset’s variance within a smaller number of components, demonstrating redundancy among engineered features. A Random Forest classifier trained on the reduced feature space maintained strong predictive performance, with only a slight decrease in AUC compared to the full-feature model.
+
+The PCA-based model shows a small shift toward higher bias but remains well-generalized, with minimal train–test performance gap. Overall, dimensionality reduction preserved most predictive power while simplifying the feature space and improving computational efficiency.
+
+This confirms that tipping behavior can be effectively modeled even after substantial dimensional compression.
