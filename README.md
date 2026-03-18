@@ -37,6 +37,8 @@ Tipping is a widely-studied but poorly-understood economic behavior. For taxi dr
 
 ### Why Big Data and Distributed Computing?
 
+Without distributed computing, training a 50-tree Random Forest on 110+ million rows would require either aggressive downsampling (reducing statistical validity) or hours to days of runtime on a single machine. Full PCA computation across 138 million rows would also require constructing a global covariance matrix exceeding typical workstation memory. Spark’s distributed execution allowed us to process the entire dataset rather than a small sample, fundamentally changing the scientific question from “what does a sample suggest?” to “what does the full population reveal?”
+
 | Challenge | Why Single-Machine Fails | Spark Solution |
 |---|---|---|
 | **Memory** | 140M rows ≈ 15–20 GB RAM — exceeds most workstations | Distributed partitioning across executors |
@@ -189,7 +191,7 @@ Pipeline: `StringIndexer → OneHotEncoder → VectorAssembler → RandomForestC
 
 | Parameter | Value | Tuning Note |
 |---|---|---|
-| `numTrees` | 50 | Tuned second; higher values showed diminishing returns |
+| `numTrees` | 50 | Tuned second |
 | `maxDepth` | 10 | Tuned first; primary lever for bias-variance tradeoff |
 | `maxBins` | 64 | Increased from default 32 for high-cardinality features |
 | `minInstancesPerNode` | 10 | Regularization to prevent overly specific leaves |
@@ -254,8 +256,6 @@ pca_pipeline = Pipeline(stages=[
 
 ![Figure 4 — Confusion matrix](assets/fig4_confusion_matrix.png)
 *Figure 4. Confusion matrix — Random Forest. TP = 19,453,571; TN = 7,377,182; FP = 780,081; FN = 37,211.*
-
-The model achieves near-perfect recall (99.81%), missing only 37,211 of 19,453,571 true positive cases. The train-test AUC gap of 0.0001 confirms negligible overfitting.
 
 ---
 
@@ -350,6 +350,8 @@ Both models sit in the **well-generalized region** of the bias-variance curve:
 6. **Hyperparameter search with CrossValidator** — grid over `numTrees`, `maxDepth`, and PCA `k`
 
 ### Reflections on Big Data Processing
+
+This project fundamentally changed how we think about scale. Rather than reducing the dataset to fit local memory constraints, we redesigned the workflow around distributed computation from the beginning. Distributed computing did not merely accelerate the analysis — it expanded the space of feasible scientific questions.
 
 Processing 140 million records is qualitatively different from 140,000. The primary challenge is not raw computation but **pipeline design** — lazy evaluation, partitioning strategy, and avoiding unnecessary materializations. Understanding why `.count()` triggers full recomputation required a meaningful shift from the pandas workflow.
 
