@@ -124,9 +124,11 @@ The raw schema included 19 columns; 14 features were retained for analysis.
 | `tip_amount` | Double | 0.0 for 29.5% of trips; positive otherwise |
 
 ![Figure 1 — Trip volume by pickup hour](assets/fig1_trips_by_hour.png)
+
 *Figure 1. Trip volume by pickup hour. Morning and evening rush peaks are visible. Data spans 138M cleaned records.*
 
 ![Figure 2 — Class distribution](assets/fig2_class_dist.png)
+
 *Figure 2. Binary class distribution of the tip label. The dataset is moderately imbalanced (70.5% tipped).*
 
 ---
