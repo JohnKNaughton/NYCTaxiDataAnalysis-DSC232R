@@ -256,7 +256,10 @@ pca_pipeline = Pipeline(stages=[
 | Recall | — | 99.81% |
 | F1-Score | — | ~97.97% |
 
-![Figure 4 — Confusion matrix](assets/confusion_matrix.png)
+<p align="left">
+  <img src="assets/confusion_matrix.png" width="500">
+</p>
+
 *Figure 4. Confusion matrix — Random Forest. TP = 19,453,571; TN = 7,377,182; FP = 780,081; FN = 37,211.*
 
 ---
