@@ -87,8 +87,8 @@ Tipping is a widely-studied but poorly-understood economic behavior. For taxi dr
 
 ```
 Time Limit:                02:00:00
-Num Cores:                 8 (defaultParallelism: 24)
-Memory Required Per Node:  64 GB
+Num Cores:                 16
+Memory Required Per Node:  128 GB
 GPUs:                      0
 ```
 
@@ -148,7 +148,7 @@ df_clean = df.filter(
 
 **Step 2 — Missing value imputation**
 
--	Non-critical numerical fields will be imputed with summary statistics that are robust to outliers (e.g. `passenger_count` nulls (~2.0%) imputed with median (1.0) via `approxQuantile`)
+-	Non-critical numerical fields were imputed with summary statistics that are robust to outliers (e.g. `passenger_count` nulls (~2.0%) imputed with median (1.0) via `approxQuantile`)
 - Categorical fields (`payment_type`, `RatecodeID`) set to `"missing"` for null values
 
 **Step 3 — Temporal feature engineering**
@@ -196,10 +196,10 @@ Pipeline: `StringIndexer → OneHotEncoder → VectorAssembler → RandomForestC
 | `featureSubsetStrategy` | `"sqrt"` | Standard for classification RF |
 | `subsamplingRate` | 0.8 | Row subsampling per tree for variance reduction |
 
-**Training strategy:** A 10% random sample (`df_small`, ~13.8M rows) was used for hyperparameter exploration. An 80/20 random split was applied. A temporal holdout (train < 2021, test on 2021) validated generalization across time.
+**Training strategy:** A 10% random sample (`df_small`, ~13.8M rows) was used for hyperparameter exploration before training on the full dataset. An 80/20 random split was applied for training and testing. A temporal holdout (train < 2021, test on 2021) validated generalization across time.
 
 ```python
-train, test = df_small.randomSplit([0.8, 0.2], seed=42)
+train, test = df_final.randomSplit([0.8, 0.2], seed=42)
 model = pipeline.fit(train)
 predictions = model.transform(test)
 
@@ -212,7 +212,7 @@ auc = evaluator.evaluate(predictions)  # → 0.9662
 
 ### Model 2 — PCA + Random Forest
 
-Adds a dimensionality reduction stage before classification: features are standardised then projected onto the top **k=10 principal components** using `pyspark.ml.feature.PCA`.
+Added a dimensionality reduction stage before classification: features were standardized then projected onto the top **k=10 principal components** using `pyspark.ml.feature.PCA`.
 
 **Pipeline stages:**
 1. `StringIndexer` (payment_type, RatecodeID)
@@ -253,9 +253,9 @@ pca_pipeline = Pipeline(stages=[
 | F1-Score | — | ~97.97% |
 
 ![Figure 4 — Confusion matrix](assets/fig4_confusion_matrix.png)
-*Figure 4. Confusion matrix — Random Forest, test set (~2.76M rows). TP=1,944,096; TN=741,629; FP=74,198; FN=4,069.*
+*Figure 4. Confusion matrix — Random Forest. TP = 19,453,571; TN = 7,377,182; FP = 780,081; FN = 37,211.*
 
-The model achieves near-perfect recall (99.79%), missing only 4,069 of 1,948,165 true positive cases. The train-test AUC gap of 0.0006 confirms negligible overfitting.
+The model achieves near-perfect recall (99.81%), missing only 37,211 of 19,453,571 true positive cases. The train-test AUC gap of 0.0001 confirms negligible overfitting.
 
 ---
 
@@ -291,10 +291,10 @@ The model achieves near-perfect recall (99.79%), missing only 4,069 of 1,948,165
 
 | Type | Count | % of Total | Key Pattern |
 |---|---|---|---|
-| ✅ True Positives | 1,944,096 | 70.3% | Card-paid trips; model confidence >0.95 |
-| ✅ True Negatives | 741,629 | 26.8% | Short/cheap/cash trips; confidence >0.98 |
-| ❌ False Positives | 74,198 | 2.7% | High fare, short distance; ambiguous context |
-| ❌ False Negatives | 4,069 | 0.15% | Atypical fare/distance ratio; confidently wrong |
+| ✅ True Positives | 19,453,571 | 70.3% | Card-paid trips; model confidence >0.95 |
+| ✅ True Negatives | 7,377,182 | 26.7% | Short/cheap/cash trips; confidence >0.98 |
+| ❌ False Positives | 780,081 | 2.8% | High fare, short distance; ambiguous context |
+| ❌ False Negatives | 37,211 | 0.13% | Atypical fare/distance ratio; confidently wrong |
 
 ---
 
@@ -302,12 +302,11 @@ The model achieves near-perfect recall (99.79%), missing only 4,069 of 1,948,165
 
 ### Are These Results Believable?
 
-A 97.17% accuracy warrants careful scrutiny. The most likely source of inflated performance is **data leakage via `payment_type`**: cash-paying riders physically cannot leave an electronic tip, so `tip_amount` is structurally 0.0 for all cash payments. The model may have learned this data-entry pattern rather than genuine tipping behavior. A rigorous follow-up would re-run both models excluding `payment_type`.
+A 97.04% accuracy warrants careful scrutiny. The most likely source of inflated performance is **data leakage via `payment_type`**: cash-paying riders physically cannot leave an electronic tip, so `tip_amount` is structurally 0.0 for all cash payments. The model may have learned this data-entry pattern rather than genuine tipping behavior. A rigorous follow-up would re-run both models excluding `payment_type`.
 
 Other considerations:
 - **Class imbalance:** A naive "always tip" classifier achieves 70.5% accuracy. Our model far exceeds this, suggesting genuine signal beyond payment type.
 - **Temporal drift:** The temporal holdout (train <2021, test 2021) yields AUC 0.9569 vs. 0.9667 for random split — a small but real drop indicating mild concept drift.
-- **10% sampling:** All training used ~13.8M rows. Results may differ at full 138M-row scale.
 
 ### Fitting Analysis
 
@@ -329,7 +328,6 @@ Both models sit in the **well-generalized region** of the bias-variance curve:
 | Issue | Impact | Suggested Fix |
 |---|---|---|
 | `payment_type` leakage | May explain most of the high accuracy | Re-run models without this feature |
-| 10% sampling | FN=4,069 may become ~40,000 at full scale | Train on full 138M rows |
 | PCA k not optimized | 60% variance captured; 90% needs k≈20 | Select k by cumulative variance threshold |
 | No feature importance back-projection | Can't interpret which raw features drive PCA model | Project RF importances back to original space |
 | COVID-19 in training data | 2020–2021 ridership drop may confound patterns | Separate pre/post-COVID training sets |
