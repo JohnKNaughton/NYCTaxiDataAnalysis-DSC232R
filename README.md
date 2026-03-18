@@ -280,7 +280,7 @@ pca_pipeline = Pipeline(stages=[
 | Model | Train AUC | Test AUC | Gap |
 |---|---|---|---|
 | Full RF (Model 1) | 0.9668 | 0.9662 | 0.0006 |
-| PCA + RF (Model 2) | ~0.964 | 0.9634 | ~0.000 |
+| PCA + RF (Model 2) | 0.9634 | 0.9634 | ~0.000 |
 
 ![Figure 5 — AUC comparison](assets/fig5_model_comparison.png)
 *Figure 5. AUC-ROC comparison. The PCA model loses only 0.003 AUC while compressing the feature space by ~44%.*
@@ -338,7 +338,7 @@ Both models sit in the **well-generalized region** of the bias-variance curve:
 
 **Model 1 (Random Forest):** AUC-ROC 0.9662 · Accuracy 97.04% · Precision 96.32% · Recall 99.81%. Near-zero train-test gap confirms excellent generalization.
 
-**Model 2 (PCA + Random Forest):** AUC-ROC 0.9636 — only 0.003 lower — while compressing ~18 features to 10 principal components retaining 60.1% of variance. Tipping is predictable from a substantially more compact representation at minimal performance cost.
+**Model 2 (PCA + Random Forest):** AUC-ROC 0.9636 — only 0.003 lower — while compressing ~18 features to 10 principal components retaining 60.07% of variance. Tipping is predictable from a substantially more compact representation at minimal performance cost.
 
 ### Future Directions
 
